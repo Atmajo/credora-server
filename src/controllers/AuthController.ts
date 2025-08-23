@@ -160,7 +160,7 @@ class AuthController {
       }
 
       const token = jwt.sign(tokenPayload, jwtSecret, {
-        expiresIn: process.env.JWT_EXPIRES_IN || '30D',
+        expiresIn: '30d',
       });
 
       const response: IAuthResponse = {

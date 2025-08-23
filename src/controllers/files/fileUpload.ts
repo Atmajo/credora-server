@@ -20,12 +20,16 @@ export const fileUpload = async (
     return;
   }
 
-  if (!req.file) {
+  if (!req.files || (Array.isArray(req.files) && req.files.length === 0)) {
     res.status(500).json({ message: 'File missing' });
     return;
   }
+  
+  const file = Array.isArray(req.files)
+    ? req.files[0]
+    : req.files[Object.keys(req.files)[0]][0];
 
-  if (!acceptedFileTypes.includes(req.file.mimetype)) {
+  if (!acceptedFileTypes.includes(file.mimetype)) {
     res.status(500).json({ message: 'Invalid file' });
     return;
   }
@@ -33,15 +37,15 @@ export const fileUpload = async (
   try {
     const { email } = req.user;
 
-    const uploadResult = await uploadFile(req.file, email);
+    const uploadResult = await uploadFile(file, email);
 
     const s3FileUrl = uploadResult.s3FileUrl;
 
-    await fs.unlink(req.file.path);
+    await fs.unlink(file.path);
 
     res.status(200).json({
       message: 'File uploaded',
-      s3FileUrl: s3FileUrl,
+      s3FileUrls: [s3FileUrl],
     });
   } catch (error) {
     console.error(error);
