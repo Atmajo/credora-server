@@ -78,7 +78,7 @@ class AuthController {
 
       const nonce = Math.floor(Math.random() * 1000000);
       const message = AuthController.generateLoginMessage(walletAddress, nonce);
-
+      
       const challenge: ILoginChallenge = {
         message,
         nonce,

@@ -11,6 +11,10 @@ const session = require('express-session');
 import { RedisStore } from 'connect-redis';
 import { redisClient } from './utils/redisClient';
 
+// Import routes
+import authRoutes from './routes/auth';
+import organizationRoutes from './routes/organization';
+
 class App {
   public app: express.Application;
   private port: string | number;
@@ -163,7 +167,8 @@ class App {
 
   private initializeRoutes(): void {
     // API routes
-    // this.app.use("/api/auth", authRoutes);
+    this.app.use("/api/auth", authRoutes);
+    this.app.use("/api/organization", organizationRoutes);
     // this.app.use("/api/credentials", credentialRoutes);
     // this.app.use('/api/institutions', institutionRoutes);
     // this.app.use('/api/users', userRoutes);
@@ -176,6 +181,7 @@ class App {
         description: 'Blockchain-based credential verification system',
         endpoints: {
           auth: '/api/auth',
+          organization: '/api/organization',
           credentials: '/api/credentials',
           health: '/health',
         },
