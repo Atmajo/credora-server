@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import { AuthenticatedRequest } from '../types/express';
-import OrganisationApplication, { IOrganisationApplication } from '../models/OrganisationsApplications';
+import OrganisationApplication, {
+  IOrganisationApplication,
+} from '../models/OrganisationsApplications';
 import User, { IUserDocument } from '../models/User';
 
 interface CreateApplicationRequest extends AuthenticatedRequest {
@@ -65,7 +67,7 @@ class OrganizationController {
       const application = new OrganisationApplication({
         user: userId,
         description,
-        documents: documents.map(doc => ({
+        documents: documents.map((doc) => ({
           ...doc,
           uploadedAt: new Date(),
         })),
@@ -87,7 +89,9 @@ class OrganizationController {
       });
     } catch (error) {
       console.error('Create application error:', error);
-      res.status(500).json({ error: 'Failed to create organization application' });
+      res
+        .status(500)
+        .json({ error: 'Failed to create organization application' });
     }
   }
 
@@ -107,7 +111,7 @@ class OrganizationController {
 
       res.json({
         success: true,
-        applications: applications.map(app => ({
+        applications: applications.map((app) => ({
           id: app._id.toString(),
           description: app.description,
           documents: app.documents,
@@ -202,7 +206,7 @@ class OrganizationController {
           }
         }
 
-        application.documents = documents.map(doc => ({
+        application.documents = documents.map((doc) => ({
           ...doc,
           uploadedAt: new Date(),
         }));
@@ -276,7 +280,9 @@ class OrganizationController {
 
       // Check if user is admin
       if (!user.isAdmin) {
-        res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+        res
+          .status(403)
+          .json({ error: 'Access denied. Admin privileges required.' });
         return;
       }
 
@@ -301,7 +307,7 @@ class OrganizationController {
 
       res.json({
         success: true,
-        applications: applications.map(app => {
+        applications: applications.map((app) => {
           const user = app.user as any;
           return {
             id: app._id.toString(),
@@ -347,7 +353,9 @@ class OrganizationController {
 
       // Check if user is admin
       if (!user.isAdmin) {
-        res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+        res
+          .status(403)
+          .json({ error: 'Access denied. Admin privileges required.' });
         return;
       }
 
@@ -431,7 +439,9 @@ class OrganizationController {
 
       // Check if user is admin
       if (!user.isAdmin) {
-        res.status(403).json({ error: 'Access denied. Admin privileges required.' });
+        res
+          .status(403)
+          .json({ error: 'Access denied. Admin privileges required.' });
         return;
       }
 
@@ -449,10 +459,13 @@ class OrganizationController {
         createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
       });
 
-      const statsByStatus = stats.reduce((acc, stat) => {
-        acc[stat._id] = stat.count;
-        return acc;
-      }, {} as Record<string, number>);
+      const statsByStatus = stats.reduce(
+        (acc, stat) => {
+          acc[stat._id] = stat.count;
+          return acc;
+        },
+        {} as Record<string, number>
+      );
 
       res.json({
         success: true,
@@ -486,7 +499,9 @@ class OrganizationController {
         userType: 'institution',
         isVerified: true,
       })
-        .select('name email walletAddress profile.website profile.bio createdAt')
+        .select(
+          'name email walletAddress profile.website profile.bio createdAt'
+        )
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
@@ -498,7 +513,7 @@ class OrganizationController {
 
       res.json({
         success: true,
-        organizations: organizations.map(org => ({
+        organizations: organizations.map((org) => ({
           id: org._id.toString(),
           name: org.name,
           email: org.email,

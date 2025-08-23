@@ -1,10 +1,13 @@
-import { Request, Response } from "express";
-import { downloadFile } from "../../utils/downloadFile";
-import { AuthenticatedRequest } from "@/types/express";
+import { Request, Response } from 'express';
+import { downloadFile } from '../../utils/downloadFile';
+import { AuthenticatedRequest } from '@/types/express';
 
-export const fileDownload = async (req: AuthenticatedRequest, res: Response) => {
+export const fileDownload = async (
+  req: AuthenticatedRequest,
+  res: Response
+) => {
   if (!req.user) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: 'Unauthorized' });
   }
 
   try {
@@ -14,7 +17,7 @@ export const fileDownload = async (req: AuthenticatedRequest, res: Response) => 
     );
 
     if (!success) {
-      return res.status(500).json({ message: "File download failed" });
+      return res.status(500).json({ message: 'File download failed' });
     }
 
     return res.status(200).json({
@@ -23,14 +26,14 @@ export const fileDownload = async (req: AuthenticatedRequest, res: Response) => 
     });
   } catch (error) {
     if (error instanceof Error) {
-      console.error("File download error");
+      console.error('File download error');
       return res.status(500).json({
-        message: "Internal server error",
+        message: 'Internal server error',
         details: error.message,
       });
     }
     return res.status(500).json({
-      message: "An unexpected error occurred",
+      message: 'An unexpected error occurred',
     });
   }
 };

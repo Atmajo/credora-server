@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IOrganisationApplication extends Document {
   user: mongoose.Types.ObjectId;
@@ -8,7 +8,7 @@ export interface IOrganisationApplication extends Document {
     fileUrl: string;
     uploadedAt: Date;
   }[];
-  status: "pending" | "approved" | "rejected";
+  status: 'pending' | 'approved' | 'rejected';
   rejectionReason?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -18,7 +18,7 @@ const OrganisationApplicationSchema: Schema = new Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      ref: 'User',
       required: true,
     },
     description: {
@@ -43,8 +43,8 @@ const OrganisationApplicationSchema: Schema = new Schema(
     ],
     status: {
       type: String,
-      enum: ["pending", "approved", "rejected"],
-      default: "pending",
+      enum: ['pending', 'approved', 'rejected'],
+      default: 'pending',
     },
     rejectionReason: {
       type: String,
@@ -57,6 +57,6 @@ const OrganisationApplicationSchema: Schema = new Schema(
 );
 
 export default mongoose.model<IOrganisationApplication>(
-  "OrganisationApplication",
+  'OrganisationApplication',
   OrganisationApplicationSchema
 );

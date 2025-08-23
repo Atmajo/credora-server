@@ -91,7 +91,9 @@ router.put(
     body('documents')
       .optional()
       .isArray({ min: 1 })
-      .withMessage('At least one document is required if documents are provided'),
+      .withMessage(
+        'At least one document is required if documents are provided'
+      ),
     body('documents.*.name')
       .optional()
       .notEmpty()

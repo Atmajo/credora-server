@@ -1,6 +1,6 @@
-import { create } from "ipfs-http-client";
-import { ICredentialMetadata } from "../types";
-import { IPFSHTTPClient } from "ipfs-http-client/types/src/types";
+import { create } from 'ipfs-http-client';
+import { ICredentialMetadata } from '../types';
+import { IPFSHTTPClient } from 'ipfs-http-client/types/src/types';
 
 class IPFSService {
   private client: IPFSHTTPClient | null = null;
@@ -11,21 +11,21 @@ class IPFSService {
 
   private async initializeClient() {
     try {
-      const host = process.env.IPFS_HOST || "ipfs.infura.io";
-      const port = parseInt(process.env.IPFS_PORT || "5001");
-      const protocol = "https";
+      const host = process.env.IPFS_HOST || 'ipfs.infura.io';
+      const port = parseInt(process.env.IPFS_PORT || '5001');
+      const protocol = 'https';
 
       const projectId = process.env.IPFS_PROJECT_ID;
       const projectSecret = process.env.IPFS_PROJECT_SECRET;
 
       if (!projectId || !projectSecret) {
         console.warn(
-          "IPFS project credentials not found. Using local IPFS node if available."
+          'IPFS project credentials not found. Using local IPFS node if available.'
         );
         this.client = create({
-          host: "localhost",
+          host: 'localhost',
           port: 5001,
-          protocol: "http",
+          protocol: 'http',
         });
       } else {
         this.client = create({
@@ -35,13 +35,13 @@ class IPFSService {
           headers: {
             authorization: `Basic ${Buffer.from(
               `${projectId}:${projectSecret}`
-            ).toString("base64")}`,
+            ).toString('base64')}`,
           },
         });
       }
-      console.log("🚀 IPFS Service initialized");
+      console.log('🚀 IPFS Service initialized');
     } catch (error) {
-      console.error("❌ Failed to initialize IPFS client:", error);
+      console.error('❌ Failed to initialize IPFS client:', error);
       // Fallback to mock mode
       this.client = null;
     }
@@ -56,14 +56,14 @@ class IPFSService {
         await this.initializeClient();
       }
       if (!this.client) {
-        throw new Error("IPFS client not available");
+        throw new Error('IPFS client not available');
       }
 
       const { cid } = await this.client.add(JSON.stringify(metadata, null, 2));
       return cid.toString();
     } catch (error) {
-      console.error("IPFS metadata upload error:", error);
-      throw new Error("Failed to upload metadata to IPFS");
+      console.error('IPFS metadata upload error:', error);
+      throw new Error('Failed to upload metadata to IPFS');
     }
   }
 
@@ -79,7 +79,7 @@ class IPFSService {
         await this.initializeClient();
       }
       if (!this.client) {
-        throw new Error("IPFS client not available");
+        throw new Error('IPFS client not available');
       }
 
       const { cid } = await this.client.add({
@@ -88,8 +88,8 @@ class IPFSService {
       });
       return cid.toString();
     } catch (error) {
-      console.error("IPFS file upload error:", error);
-      throw new Error("Failed to upload file to IPFS");
+      console.error('IPFS file upload error:', error);
+      throw new Error('Failed to upload file to IPFS');
     }
   }
 
@@ -107,8 +107,8 @@ class IPFSService {
       }
       return results;
     } catch (error) {
-      console.error("IPFS batch upload error:", error);
-      throw new Error("Failed to upload files to IPFS");
+      console.error('IPFS batch upload error:', error);
+      throw new Error('Failed to upload files to IPFS');
     }
   }
 
@@ -121,7 +121,7 @@ class IPFSService {
         await this.initializeClient();
       }
       if (!this.client) {
-        throw new Error("IPFS client not available");
+        throw new Error('IPFS client not available');
       }
 
       const chunks: Uint8Array[] = [];
@@ -131,8 +131,8 @@ class IPFSService {
       const data = Buffer.concat(chunks).toString();
       return JSON.parse(data) as ICredentialMetadata;
     } catch (error) {
-      console.error("IPFS retrieval error:", error);
-      throw new Error("Failed to retrieve metadata from IPFS");
+      console.error('IPFS retrieval error:', error);
+      throw new Error('Failed to retrieve metadata from IPFS');
     }
   }
 
@@ -145,7 +145,7 @@ class IPFSService {
         await this.initializeClient();
       }
       if (!this.client) {
-        throw new Error("IPFS client not available");
+        throw new Error('IPFS client not available');
       }
 
       const chunks: Uint8Array[] = [];
@@ -154,8 +154,8 @@ class IPFSService {
       }
       return Buffer.concat(chunks);
     } catch (error) {
-      console.error("IPFS file retrieval error:", error);
-      throw new Error("Failed to retrieve file from IPFS");
+      console.error('IPFS file retrieval error:', error);
+      throw new Error('Failed to retrieve file from IPFS');
     }
   }
 
@@ -168,7 +168,7 @@ class IPFSService {
         await this.initializeClient();
       }
       if (!this.client) {
-        throw new Error("IPFS client not available");
+        throw new Error('IPFS client not available');
       }
 
       // Try to get the first chunk
@@ -190,13 +190,13 @@ class IPFSService {
         await this.initializeClient();
       }
       if (!this.client) {
-        throw new Error("IPFS client not available");
+        throw new Error('IPFS client not available');
       }
 
       await this.client.pin.add(hash);
     } catch (error) {
-      console.error("IPFS pin error:", error);
-      throw new Error("Failed to pin content to IPFS");
+      console.error('IPFS pin error:', error);
+      throw new Error('Failed to pin content to IPFS');
     }
   }
 
@@ -209,13 +209,13 @@ class IPFSService {
         await this.initializeClient();
       }
       if (!this.client) {
-        throw new Error("IPFS client not available");
+        throw new Error('IPFS client not available');
       }
 
       await this.client.pin.rm(hash);
     } catch (error) {
-      console.error("IPFS unpin error:", error);
-      throw new Error("Failed to unpin content from IPFS");
+      console.error('IPFS unpin error:', error);
+      throw new Error('Failed to unpin content from IPFS');
     }
   }
 
@@ -228,13 +228,13 @@ class IPFSService {
         await this.initializeClient();
       }
       if (!this.client) {
-        throw new Error("IPFS client not available");
+        throw new Error('IPFS client not available');
       }
 
       return await this.client.stats.bitswap();
     } catch (error) {
-      console.error("IPFS stats error:", error);
-      throw new Error("Failed to get IPFS stats");
+      console.error('IPFS stats error:', error);
+      throw new Error('Failed to get IPFS stats');
     }
   }
 
@@ -250,7 +250,7 @@ class IPFSService {
    */
   public getGatewayUrl(
     hash: string,
-    gateway: string = "https://ipfs.io"
+    gateway: string = 'https://ipfs.io'
   ): string {
     return `${gateway}/ipfs/${hash}`;
   }

@@ -1,14 +1,14 @@
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { hashFile } from "./hashFile";
-import fs from "fs/promises";
-import path from "path";
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { hashFile } from './hashFile';
+import fs from 'fs/promises';
+import path from 'path';
 
 export const uploadFile = async (
   file: any,
   email: string
 ): Promise<{ s3FileUrl: string }> => {
   try {
-    const key = await hashFile(file.path, "sha256");
+    const key = await hashFile(file.path, 'sha256');
 
     const s3Client = new S3Client({
       region: process.env.AWS_REGION!,
@@ -20,11 +20,11 @@ export const uploadFile = async (
 
     const fileContent = await fs.readFile(file.path);
 
-    const folderName = email.replace(/[^\w.-]/g, "_").toLowerCase();
+    const folderName = email.replace(/[^\w.-]/g, '_').toLowerCase();
 
     const fileName = `${Date.now()}-${path.basename(key)}`
       .trim()
-      .replace(/\s+/g, "_");
+      .replace(/\s+/g, '_');
 
     const fileKey = `${folderName}/${fileName}`;
 
@@ -33,7 +33,7 @@ export const uploadFile = async (
       Key: fileKey,
       Body: fileContent,
       ContentType: file.mimetype,
-      ACL: "public-read" as any,
+      ACL: 'public-read' as any,
     };
 
     await s3Client.send(new PutObjectCommand(uploadParams));

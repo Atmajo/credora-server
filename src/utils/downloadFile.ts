@@ -1,5 +1,5 @@
-import { S3Client, GetObjectCommand } from "@aws-sdk/client-s3";
-import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { S3Client, GetObjectCommand } from '@aws-sdk/client-s3';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 export const downloadFile = async (fileUrl: string, expirationTime = 300) => {
   try {
@@ -30,7 +30,7 @@ export const downloadFile = async (fileUrl: string, expirationTime = 300) => {
     return {
       success: true,
       downloadUrl: signedUrl,
-      message: "File download link generated successfully",
+      message: 'File download link generated successfully',
     };
   } catch (error) {
     throw error;
