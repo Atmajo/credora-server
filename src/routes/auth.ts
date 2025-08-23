@@ -44,7 +44,8 @@ router.post(
 router.get(
   '/verify',
   [query('token').notEmpty().withMessage('Token is required')],
-  AuthController.verifyProfile as any
+  handleValidationErrors,
+  AuthController.verifyProfile
 );
 
 router.get('/profile', auth, AuthController.getProfile as any);
@@ -78,6 +79,12 @@ router.put(
   handleValidationErrors,
   AuthController.updateProfile as any
 );
+
+router.post('/refresh', auth, AuthController.refreshToken as any);
+
+router.post('/logout', auth, AuthController.logout as any);
+
+router.delete('/account', auth, AuthController.deleteAccount as any);
 
 router.post('/refresh', auth, AuthController.refreshToken as any);
 

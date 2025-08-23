@@ -7,10 +7,6 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import connectDB from './config/database';
 
-const session = require('express-session');
-import { RedisStore } from 'connect-redis';
-import { redisClient } from './utils/redisClient';
-
 // Import routes
 import authRoutes from './routes/auth';
 import organizationRoutes from './routes/organization';
@@ -39,27 +35,6 @@ class App {
   }
 
   private initializeMiddlewares(): void {
-    const redisStore = new RedisStore({
-      client: redisClient,
-      prefix: 'session:',
-    });
-
-    this.app.use(
-      session({
-        name: 'credora.sid',
-        store: redisStore,
-        secret: process.env.SESSION_SECRET || 'credora_session_secret',
-        resave: false,
-        saveUninitialized: false,
-        cookie: {
-          secure: false,
-          httpOnly: true,
-          maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
-          sameSite: 'none',
-        },
-      })
-    );
-
     // Security middleware
     this.app.use(
       helmet({
@@ -97,7 +72,7 @@ class App {
         },
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'Cookie'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
       })
     );
 

@@ -10,7 +10,7 @@ export interface IUser {
     website?: string;
     documents?: string[];
   };
-  userType: 'student' | 'institution' | 'verifier';
+  userType: 'user' | 'institution' | 'employer' | 'verifier';
   isVerified: boolean;
   isAdmin?: boolean;
   credentialsOwned?: ICredentialOwnership[];
@@ -18,6 +18,8 @@ export interface IUser {
     notifications: boolean;
     publicProfile: boolean;
   };
+  otp?: string;
+  otpExpiry?: Date;
   createdAt?: Date;
   updatedAt?: Date;
 }

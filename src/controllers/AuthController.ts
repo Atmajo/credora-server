@@ -7,17 +7,7 @@ import User from '../models/User';
 import { generateOtp } from '../utils/generate';
 import { sendVerificationMail } from '../mails/sendVerificationMail';
 
-declare module 'express-session' {
-  interface SessionData {
-    token?: string;
-    trust?: boolean;
-    otp?: string;
-    walletAddress?: string;
-  }
-}
-
 interface LoginRequest extends Request {
-  session: Request['session'];
   body: IAuthRequest;
 }
 
@@ -142,26 +132,23 @@ class AuthController {
         throw new Error('JWT_SECRET is not configured');
       }
 
-      const tokenPayload = {
+      let tokenPayload = {
         id: user._id,
         walletAddress: user.walletAddress,
       };
 
-      const token = jwt.sign(tokenPayload, jwtSecret, {
-        expiresIn: process.env.JWT_EXPIRES_IN || '30D',
-      });
-
-      req.session.token = token;
-      req.session.trust = trust;
-
       if (!user.isVerified) {
-        req.session.otp = generateOtp();
-        req.session.walletAddress = user.walletAddress;
+        const otp = generateOtp();
+        const otpExpiry = new Date(Date.now() + 5 * 60 * 1000);
+
+        user.otp = otp;
+        user.otpExpiry = otpExpiry;
+        await user.save();
 
         const token = jwt.sign(
           {
-            otp: req.session.otp,
-            walletAddress: req.session.walletAddress,
+            otp: otp,
+            walletAddress: user.walletAddress,
           },
           jwtSecret,
           {
@@ -171,6 +158,10 @@ class AuthController {
 
         await sendVerificationMail(user.email, token);
       }
+
+      const token = jwt.sign(tokenPayload, jwtSecret, {
+        expiresIn: process.env.JWT_EXPIRES_IN || '30D',
+      });
 
       const response: IAuthResponse = {
         success: true,
@@ -196,13 +187,12 @@ class AuthController {
    * Verify user
    */
   public static async verifyProfile(
-    req: AuthenticatedRequest,
+    req: Request,
     res: Response
   ): Promise<void> {
     try {
       const { token } = req.query;
 
-      // Generate JWT token
       const jwtSecret = process.env.JWT_SECRET;
       if (!jwtSecret) {
         throw new Error('JWT_SECRET is not configured');
@@ -213,22 +203,25 @@ class AuthController {
         jwtSecret
       ) as { otp: string; walletAddress: string };
 
-      if (!req.session.otp || !req.session.walletAddress) {
-        res.status(400).json({ error: 'Invalid session data' });
-        return;
-      }
-
-      if (
-        req.session.otp !== otp ||
-        req.session.walletAddress !== walletAddress
-      ) {
-        res.status(400).json({ error: 'Invalid OTP or wallet address' });
-        return;
-      }
-
       const user = await User.findByWalletAddress(walletAddress);
       if (!user) {
         res.status(404).json({ error: 'User not found' });
+        return;
+      }
+
+      // Check if OTP exists and hasn't expired
+      if (!user.otp || !user.otpExpiry) {
+        res.status(400).json({ error: 'No verification code found' });
+        return;
+      }
+
+      if (new Date() > user.otpExpiry) {
+        res.status(400).json({ error: 'Verification code has expired' });
+        return;
+      }
+
+      if (user.otp !== otp) {
+        res.status(400).json({ error: 'Invalid verification code' });
         return;
       }
 
@@ -242,6 +235,8 @@ class AuthController {
       });
 
       user.isVerified = true;
+      user.otp = undefined;
+      user.otpExpiry = undefined;
       await user.save();
 
       const response: IAuthResponse = {
@@ -445,8 +440,6 @@ class AuthController {
     res: Response
   ): Promise<void> {
     try {
-      // Since we're using stateless JWT, logout is primarily client-side
-      // We could implement a token blacklist here if needed
       res.json({
         success: true,
         message: 'Logged out successfully',

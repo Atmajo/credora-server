@@ -119,6 +119,12 @@ const UserSchema = new Schema<IUserDocument>(
         default: false,
       },
     },
+    otp: {
+      type: String,
+    },
+    otpExpiry: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
