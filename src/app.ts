@@ -52,9 +52,10 @@ class App {
         resave: false,
         saveUninitialized: false,
         cookie: {
-          secure: false,
+          secure: process.env.NODE_ENV === 'production',
           httpOnly: true,
           maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+          sameSite: 'none',
         },
       })
     );
@@ -167,8 +168,8 @@ class App {
 
   private initializeRoutes(): void {
     // API routes
-    this.app.use("/api/auth", authRoutes);
-    this.app.use("/api/organization", organizationRoutes);
+    this.app.use('/api/auth', authRoutes);
+    this.app.use('/api/organization', organizationRoutes);
     // this.app.use("/api/credentials", credentialRoutes);
     // this.app.use('/api/institutions', institutionRoutes);
     // this.app.use('/api/users', userRoutes);
