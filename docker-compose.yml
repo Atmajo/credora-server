@@ -17,9 +17,24 @@ services:
       - ./init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
     networks:
       - credora-network
+  
+  server:
+    build: .
+    container_name: credora-server
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    depends_on:
+      - mongodb
+    networks:
+      - credora-network
+    volumes:
+      - ./logs:/app/logs
 
   redis:
-    image: redis:7-alpine
+    image: redis:latest
     container_name: credora-redis
     restart: unless-stopped
     ports:
