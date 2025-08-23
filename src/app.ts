@@ -11,6 +11,9 @@ import authRoutes from './routes/auth';
 import organizationRoutes from './routes/organization';
 import credentialRoutes from './routes/credentials';
 import fileRoutes from './routes/file';
+import blockchainRoutes from './routes/blockchain';
+import walletRoutes from './routes/wallet';
+import verificationRoutes from './routes/verification';
 
 class App {
   public app: express.Application;
@@ -126,6 +129,9 @@ class App {
     this.app.use('/api/organization', organizationRoutes);
     this.app.use("/api/credentials", credentialRoutes);
     this.app.use("/api/file", fileRoutes);
+    this.app.use('/api/blockchain', blockchainRoutes);
+    this.app.use('/api/wallet', walletRoutes);
+    this.app.use('/api/verification', verificationRoutes);
     // this.app.use('/api/institutions', institutionRoutes);
     // this.app.use('/api/users', userRoutes);
 
@@ -139,6 +145,10 @@ class App {
           auth: '/api/auth',
           organization: '/api/organization',
           credentials: '/api/credentials',
+          blockchain: '/api/blockchain',
+          wallet: '/api/wallet',
+          verification: '/api/verification',
+          file: '/api/file',
           health: '/health',
         },
         documentation: 'https://docs.credora.tech',

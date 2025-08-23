@@ -119,6 +119,21 @@ const UserSchema = new Schema<IUserDocument>(
         default: false,
       },
     },
+    blockchain: {
+      isRegistered: {
+        type: Boolean,
+        default: false,
+      },
+      registrationTxHash: {
+        type: String,
+      },
+      registrationBlockNumber: {
+        type: Number,
+      },
+      registeredAt: {
+        type: Date,
+      },
+    },
     otp: {
       type: String,
     },

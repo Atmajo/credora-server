@@ -18,6 +18,12 @@ export interface IUser {
     notifications: boolean;
     publicProfile: boolean;
   };
+  blockchain?: {
+    isRegistered: boolean;
+    registrationTxHash?: string;
+    registrationBlockNumber?: number;
+    registeredAt?: Date;
+  };
   otp?: string;
   otpExpiry?: Date;
   createdAt?: Date;

@@ -4,6 +4,7 @@ import OrganisationApplication, {
   IOrganisationApplication,
 } from '../models/OrganisationsApplications';
 import User, { IUserDocument } from '../models/User';
+import blockchain from '../config/blockchain';
 
 interface CreateApplicationRequest extends AuthenticatedRequest {
   body: {
@@ -281,7 +282,7 @@ class OrganizationController {
         .limit(limit);
 
       const total = await OrganisationApplication.countDocuments(filter);
-
+      
       res.json({
         success: true,
         applications: applications.map((app) => {
@@ -511,6 +512,115 @@ class OrganizationController {
     } catch (error) {
       console.error('Get verified organizations error:', error);
       res.status(500).json({ error: 'Failed to get verified organizations' });
+    }
+  }
+
+  /**
+   * Register approved organization on blockchain
+   */
+  public static async registerOnBlockchain(
+    req: AuthenticatedRequest,
+    res: Response
+  ): Promise<void> {
+    try {
+      const user = req.user;
+
+      // Check if user is an approved institution
+      if (user.userType !== 'institution' || !user.isVerified) {
+        res.status(403).json({ 
+          error: 'Only verified institutions can register on blockchain' 
+        });
+        return;
+      }
+
+      // Check if already registered on blockchain
+      if (user.blockchain?.isRegistered) {
+        res.status(400).json({ 
+          error: 'Organization is already registered on blockchain' 
+        });
+        return;
+      }
+
+      // Check blockchain status
+      const isAuthorized = await blockchain.registryContract.isAuthorizedIssuer(
+        user.walletAddress
+      );
+
+      if (isAuthorized) {
+        // Update user record to reflect blockchain registration
+        await User.findByIdAndUpdate(user._id, {
+          $set: {
+            'blockchain.isRegistered': true,
+            'blockchain.registeredAt': new Date(),
+          }
+        });
+
+        res.json({
+          success: true,
+          message: 'Organization is already registered on blockchain',
+          alreadyRegistered: true,
+        });
+        return;
+      }
+
+      // Prepare registration data
+      const orgName = user.name;
+      const orgDescription = user.profile?.bio || `${user.name} - Verified Institution`;
+      const orgWebsite = user.profile?.website || '';
+
+      // Estimate gas
+      const gasEstimate = await blockchain.getGasEstimate(
+        blockchain.registryContract,
+        'registerInstitution',
+        [user.walletAddress, orgName, orgDescription, orgWebsite]
+      );
+
+      // Register on blockchain
+      const tx = await blockchain.registryContract.registerInstitution(
+        user.walletAddress,
+        orgName,
+        orgDescription,
+        orgWebsite,
+        {
+          gasLimit: gasEstimate.gasLimit,
+          gasPrice: gasEstimate.gasPrice,
+        }
+      );
+
+      // Wait for confirmation
+      const receipt = await blockchain.waitForTransaction(tx.hash, 2);
+
+      if (!receipt) {
+        throw new Error('Transaction failed to confirm');
+      }
+
+      // Update user record
+      await User.findByIdAndUpdate(user._id, {
+        $set: {
+          'blockchain.isRegistered': true,
+          'blockchain.registrationTxHash': tx.hash,
+          'blockchain.registrationBlockNumber': receipt.blockNumber,
+          'blockchain.registeredAt': new Date(),
+        }
+      });
+
+      res.json({
+        success: true,
+        message: 'Successfully registered organization on blockchain',
+        transaction: {
+          hash: tx.hash,
+          blockNumber: receipt.blockNumber,
+          gasUsed: receipt.gasUsed?.toString(),
+        },
+        gasEstimate,
+      });
+
+    } catch (error) {
+      console.error('Blockchain registration error:', error);
+      res.status(500).json({ 
+        error: 'Failed to register organization on blockchain',
+        details: (error as Error).message 
+      });
     }
   }
 }

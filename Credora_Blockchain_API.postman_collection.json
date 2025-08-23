@@ -1,0 +1,907 @@
+{
+  "info": {
+    "name": "Credora Blockchain API",
+    "description": "Complete API collection for Credora blockchain-based credential management system",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwt_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "wallet_address",
+      "value": "0x742d35Cc6634C0532925a3b8D82Fd4C2C6B24b84",
+      "type": "string"
+    },
+    {
+      "key": "test_token_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "01. Authentication",
+      "item": [
+        {
+          "name": "Get Login Challenge",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"walletAddress\": \"{{wallet_address}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/challenge",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "challenge"]
+            },
+            "description": "Get a challenge message for wallet signature authentication"
+          }
+        },
+        {
+          "name": "Login with Wallet",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('jwt_token', response.token);",
+                  "        console.log('JWT token saved to collection variable');",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\",\n  \"walletAddress\": \"{{wallet_address}}\",\n  \"signature\": \"0x_signature_from_wallet\",\n  \"message\": \"Please sign this message to authenticate with Credential Passport.\\n\\n    Wallet: {{wallet_address}}\\n    Nonce: 123456\\n    Timestamp: 1692876543000\\n\\n    This request will not trigger a blockchain transaction or cost any gas fees.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login with wallet signature"
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "profile"]
+            },
+            "description": "Get current user profile"
+          }
+        },
+        {
+          "name": "Check Wallet Availability",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/check-wallet/{{wallet_address}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "check-wallet", "{{wallet_address}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "02. Organization Management",
+      "item": [
+        {
+          "name": "Create Organization Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"institution\",\n  \"description\": \"We are Harvard University, a prestigious educational institution established in 1636. We offer undergraduate, graduate, and professional programs across various disciplines.\",\n  \"document\": \"https://ipfs.io/ipfs/QmExampleHash...\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/organization/applications",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organization", "applications"]
+            }
+          }
+        },
+        {
+          "name": "Get User Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/organization/applications",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organization", "applications"]
+            }
+          }
+        },
+        {
+          "name": "Get All Applications (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/organization/admin/applications?page=1&limit=10&status=pending",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organization", "admin", "applications"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "status",
+                  "value": "pending"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Review Application (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"approved\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/organization/admin/applications/:applicationId/review",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organization", "admin", "applications", ":applicationId", "review"]
+            }
+          }
+        },
+        {
+          "name": "Get Verified Organizations",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/organization/verified?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "organization", "verified"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "03. Blockchain Operations",
+      "item": [
+        {
+          "name": "Get Network Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/blockchain/network",
+              "host": ["{{base_url}}"],
+              "path": ["api", "blockchain", "network"]
+            },
+            "description": "Get blockchain network information"
+          }
+        },
+        {
+          "name": "Check Blockchain Registration Status",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/blockchain/registration-status",
+              "host": ["{{base_url}}"],
+              "path": ["api", "blockchain", "registration-status"]
+            }
+          }
+        },
+        {
+          "name": "Register on Blockchain",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"organizationType\": \"institution\",\n  \"organizationName\": \"Harvard University\",\n  \"organizationDetails\": {\n    \"description\": \"Leading educational institution established in 1636\",\n    \"website\": \"https://harvard.edu\",\n    \"location\": \"Cambridge, MA, USA\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/blockchain/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "blockchain", "register"]
+            }
+          }
+        },
+        {
+          "name": "Estimate Gas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"contractAddress\": \"0x...\",\n  \"methodName\": \"registerInstitution\",\n  \"parameters\": [\"{{wallet_address}}\", \"Test University\", \"Description\", \"https://test.edu\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/blockchain/estimate-gas",
+              "host": ["{{base_url}}"],
+              "path": ["api", "blockchain", "estimate-gas"]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/blockchain/transaction/0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+              "host": ["{{base_url}}"],
+              "path": ["api", "blockchain", "transaction", "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"]
+            }
+          }
+        },
+        {
+          "name": "Get Contract Events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/blockchain/events?contractType=registry&eventName=InstitutionRegistered&fromBlock=0&toBlock=latest",
+              "host": ["{{base_url}}"],
+              "path": ["api", "blockchain", "events"],
+              "query": [
+                {
+                  "key": "contractType",
+                  "value": "registry"
+                },
+                {
+                  "key": "eventName",
+                  "value": "InstitutionRegistered"
+                },
+                {
+                  "key": "fromBlock",
+                  "value": "0"
+                },
+                {
+                  "key": "toBlock",
+                  "value": "latest"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Verify Contract Interaction",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/blockchain/verify-interaction",
+              "host": ["{{base_url}}"],
+              "path": ["api", "blockchain", "verify-interaction"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "04. Wallet Management",
+      "item": [
+        {
+          "name": "Get Wallet Info",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/wallet/info",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wallet", "info"]
+            }
+          }
+        },
+        {
+          "name": "Validate Wallet Address",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/wallet/validate/{{wallet_address}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wallet", "validate", "{{wallet_address}}"]
+            }
+          }
+        },
+        {
+          "name": "Sign Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"Hello from Credora!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wallet/sign-message",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wallet", "sign-message"]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/wallet/transactions?limit=10&offset=0",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wallet", "transactions"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "0"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Estimate Transaction Gas",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"{{wallet_address}}\",\n  \"value\": \"0.01\",\n  \"data\": \"0x\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/wallet/estimate-gas",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wallet", "estimate-gas"]
+            }
+          }
+        },
+        {
+          "name": "Get Network Fees",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/wallet/fees",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wallet", "fees"]
+            }
+          }
+        },
+        {
+          "name": "Get Credential Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/wallet/credentials",
+              "host": ["{{base_url}}"],
+              "path": ["api", "wallet", "credentials"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "05. Credential Management",
+      "item": [
+        {
+          "name": "Issue Single Credential",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipientAddress\": \"{{wallet_address}}\",\n  \"recipientName\": \"John Smith\",\n  \"credentialData\": {\n    \"title\": \"Bachelor of Science in Computer Science\",\n    \"description\": \"4-year undergraduate degree program\",\n    \"credentialType\": \"Degree\",\n    \"subject\": \"Computer Science\",\n    \"grade\": \"Magna Cum Laude\",\n    \"gpa\": 3.8,\n    \"credits\": 120,\n    \"skills\": [\"Programming\", \"Data Structures\", \"Algorithms\", \"Software Engineering\"],\n    \"imageUrl\": \"https://university.edu/diploma-template.png\"\n  },\n  \"expiryDate\": 1735689600\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/credentials/issue",
+              "host": ["{{base_url}}"],
+              "path": ["api", "credentials", "issue"]
+            }
+          }
+        },
+        {
+          "name": "Batch Issue Credentials",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credentials\": [\n    {\n      \"recipientAddress\": \"0x123...\",\n      \"recipientName\": \"Student 1\",\n      \"title\": \"Bachelor of Science\",\n      \"credentialType\": \"Degree\",\n      \"subject\": \"Computer Science\",\n      \"grade\": \"A\"\n    },\n    {\n      \"recipientAddress\": \"0x456...\",\n      \"recipientName\": \"Student 2\",\n      \"title\": \"Bachelor of Arts\",\n      \"credentialType\": \"Degree\",\n      \"subject\": \"Literature\",\n      \"grade\": \"B+\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/credentials/batch-issue",
+              "host": ["{{base_url}}"],
+              "path": ["api", "credentials", "batch-issue"]
+            }
+          }
+        },
+        {
+          "name": "Get Issued Credentials",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/credentials/issued?page=1&limit=10",
+              "host": ["{{base_url}}"],
+              "path": ["api", "credentials", "issued"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Credential Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/credentials/{{test_token_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "credentials", "{{test_token_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Revoke Credential",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Academic misconduct discovered\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/credentials/{{test_token_id}}/revoke",
+              "host": ["{{base_url}}"],
+              "path": ["api", "credentials", "{{test_token_id}}", "revoke"]
+            }
+          }
+        },
+        {
+          "name": "Get Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/credentials/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["api", "credentials", "dashboard"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "06. Verification",
+      "item": [
+        {
+          "name": "Verify Single Credential",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tokenId\": \"{{test_token_id}}\",\n  \"verifierAddress\": \"{{wallet_address}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/verification/verify",
+              "host": ["{{base_url}}"],
+              "path": ["api", "verification", "verify"]
+            }
+          }
+        },
+        {
+          "name": "Batch Verify Credentials",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tokenIds\": [\"1\", \"2\", \"3\"],\n  \"verifierAddress\": \"{{wallet_address}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/verification/batch-verify",
+              "host": ["{{base_url}}"],
+              "path": ["api", "verification", "batch-verify"]
+            }
+          }
+        },
+        {
+          "name": "Get Verification History",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/verification/history/{{test_token_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "verification", "history", "{{test_token_id}}"]
+            }
+          }
+        },
+        {
+          "name": "Verify Issuer Authority",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/verification/issuer/{{wallet_address}}",
+              "host": ["{{base_url}}"],
+              "path": ["api", "verification", "issuer", "{{wallet_address}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Verification Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tokenId\": \"{{test_token_id}}\",\n  \"verificationData\": {\n    \"purpose\": \"Employment verification\",\n    \"scope\": \"Education background check\",\n    \"requiredFields\": [\"degree\", \"institution\", \"graduation_date\"]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/verification/request",
+              "host": ["{{base_url}}"],
+              "path": ["api", "verification", "request"]
+            }
+          }
+        },
+        {
+          "name": "Get Verification Stats",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/verification/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "verification", "stats"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "07. File Management",
+      "item": [
+        {
+          "name": "Upload File",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/file/upload",
+              "host": ["{{base_url}}"],
+              "path": ["api", "file", "upload"]
+            }
+          }
+        },
+        {
+          "name": "Download File",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{jwt_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/file/download/:filename",
+              "host": ["{{base_url}}"],
+              "path": ["api", "file", "download", ":filename"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "08. Health Check",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "API Documentation",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api",
+              "host": ["{{base_url}}"],
+              "path": ["api"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Auto-refresh JWT token if it's about to expire",
+          "const token = pm.collectionVariables.get('jwt_token');",
+          "",
+          "if (token) {",
+          "    try {",
+          "        const payload = JSON.parse(atob(token.split('.')[1]));",
+          "        const currentTime = Math.floor(Date.now() / 1000);",
+          "        const tokenExpiry = payload.exp;",
+          "        ",
+          "        if (tokenExpiry && (tokenExpiry - currentTime) < 300) {",
+          "            console.log('Token will expire soon, consider refreshing');",
+          "        }",
+          "    } catch (e) {",
+          "        console.log('Could not parse JWT token');",
+          "    }",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script",
+          "pm.test('Response time is less than 5000ms', function () {",
+          "    pm.expect(pm.response.responseTime).to.be.below(5000);",
+          "});",
+          "",
+          "pm.test('Response has proper content type', function () {",
+          "    pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json');",
+          "});"
+        ]
+      }
+    }
+  ]
+}

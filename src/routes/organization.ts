@@ -192,4 +192,15 @@ router.get(
   OrganizationController.getVerifiedOrganizations
 );
 
+/**
+ * @route POST /api/organization/register-blockchain
+ * @desc Register approved organization on blockchain
+ * @access Private (verified institutions only)
+ */
+router.post(
+  '/register-blockchain',
+  auth,
+  OrganizationController.registerOnBlockchain as any
+);
+
 export default router;
