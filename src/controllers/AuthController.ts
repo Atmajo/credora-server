@@ -228,9 +228,7 @@ class AuthController {
         walletAddress: user.walletAddress,
       };
 
-      const tokenData = jwt.sign(tokenPayload, jwtSecret, {
-        expiresIn: process.env.JWT_EXPIRES_IN || '30D',
-      });
+      const tokenData = jwt.sign(tokenPayload, jwtSecret);
 
       user.isVerified = true;
       user.otp = undefined;
