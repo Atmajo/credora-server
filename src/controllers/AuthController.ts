@@ -159,9 +159,7 @@ class AuthController {
         await sendVerificationMail(user.email, token);
       }
 
-      const token = jwt.sign(tokenPayload, jwtSecret, {
-        expiresIn: '30d',
-      });
+      const token = jwt.sign(tokenPayload, jwtSecret);
 
       const response: IAuthResponse = {
         success: true,
