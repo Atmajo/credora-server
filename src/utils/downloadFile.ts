@@ -4,6 +4,7 @@ import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 export const downloadFile = async (fileUrl: string, expirationTime = 300) => {
   try {
     const s3Client = new S3Client({
+      endpoint: process.env.AWS_HOST!,
       region: process.env.AWS_REGION!,
       credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY!,

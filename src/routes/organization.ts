@@ -30,15 +30,9 @@ router.post(
       .withMessage('Description is required')
       .isLength({ min: 10, max: 1000 })
       .withMessage('Description must be between 10 and 1000 characters'),
-    body('documents')
-      .isArray({ min: 1 })
-      .withMessage('At least one document is required'),
-    body('documents.*.name')
+    body('document')
       .notEmpty()
-      .withMessage('Document name is required'),
-    body('documents.*.fileUrl')
-      .isURL()
-      .withMessage('Document file URL must be valid'),
+      .withMessage('Document is required'),
   ],
   handleValidationErrors,
   OrganizationController.createApplication as any
@@ -88,20 +82,10 @@ router.put(
       .optional()
       .isLength({ min: 10, max: 1000 })
       .withMessage('Description must be between 10 and 1000 characters'),
-    body('documents')
-      .optional()
-      .isArray({ min: 1 })
-      .withMessage(
-        'At least one document is required if documents are provided'
-      ),
-    body('documents.*.name')
+    body('document')
       .optional()
       .notEmpty()
-      .withMessage('Document name is required'),
-    body('documents.*.fileUrl')
-      .optional()
-      .isURL()
-      .withMessage('Document file URL must be valid'),
+      .withMessage('Document cannot be empty if provided'),
   ],
   handleValidationErrors,
   OrganizationController.updateApplication as any

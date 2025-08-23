@@ -9,8 +9,9 @@ export const uploadFile = async (
 ): Promise<{ s3FileUrl: string }> => {
   try {
     const key = await hashFile(file.path, 'sha256');
-
+    
     const s3Client = new S3Client({
+      endpoint: process.env.AWS_HOST!,
       region: process.env.AWS_REGION!,
       credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY!,
@@ -37,9 +38,9 @@ export const uploadFile = async (
     };
 
     await s3Client.send(new PutObjectCommand(uploadParams));
-
+    
     return {
-      s3FileUrl: `https://${uploadParams.Bucket}.s3.${process.env.AWS_REGION}.amazonaws.com/${fileKey}`,
+      s3FileUrl: `https://blr1.vultrobjects.com/credora/${fileKey}`,
     };
   } catch (error) {
     throw error;

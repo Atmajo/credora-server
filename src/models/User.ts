@@ -97,7 +97,7 @@ const UserSchema = new Schema<IUserDocument>(
     },
     userType: {
       type: String,
-      enum: ['user', 'institution', 'employer', 'verifier'],
+      enum: ['user', 'institution', 'company', 'verifier'],
       required: true,
     },
     isVerified: {

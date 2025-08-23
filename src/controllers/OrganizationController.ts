@@ -7,11 +7,9 @@ import User, { IUserDocument } from '../models/User';
 
 interface CreateApplicationRequest extends AuthenticatedRequest {
   body: {
+    type: 'institution' | 'company';
     description: string;
-    documents: {
-      name: string;
-      fileUrl: string;
-    }[];
+    document: string;
   };
 }
 
@@ -31,12 +29,12 @@ class OrganizationController {
     res: Response
   ): Promise<void> {
     try {
-      const { description, documents } = req.body;
+      const { description, document, type } = req.body;
       const userId = req.user._id;
 
-      if (!description || !documents || documents.length === 0) {
+      if (!type || !description || !document) {
         res.status(400).json({
-          error: 'Description and at least one document are required',
+          error: 'Type, description, and document are required',
         });
         return;
       }
@@ -54,23 +52,11 @@ class OrganizationController {
         return;
       }
 
-      // Validate documents
-      for (const doc of documents) {
-        if (!doc.name || !doc.fileUrl) {
-          res.status(400).json({
-            error: 'Each document must have a name and fileUrl',
-          });
-          return;
-        }
-      }
-
       const application = new OrganisationApplication({
         user: userId,
+        type,
         description,
-        documents: documents.map((doc) => ({
-          ...doc,
-          uploadedAt: new Date(),
-        })),
+        document,
       });
 
       await application.save();
@@ -79,8 +65,9 @@ class OrganizationController {
         success: true,
         application: {
           id: application._id.toString(),
+          type: application.type,
           description: application.description,
-          documents: application.documents,
+          document: application.document,
           status: application.status,
           createdAt: application.createdAt,
           updatedAt: application.updatedAt,
@@ -113,8 +100,9 @@ class OrganizationController {
         success: true,
         applications: applications.map((app) => ({
           id: app._id.toString(),
+          type: app.type,
           description: app.description,
-          documents: app.documents,
+          document: app.document,
           status: app.status,
           rejectionReason: app.rejectionReason,
           createdAt: app.createdAt,
@@ -153,7 +141,7 @@ class OrganizationController {
         application: {
           id: application._id.toString(),
           description: application.description,
-          documents: application.documents,
+          document: application.document,
           status: application.status,
           rejectionReason: application.rejectionReason,
           createdAt: application.createdAt,
@@ -175,7 +163,7 @@ class OrganizationController {
   ): Promise<void> {
     try {
       const { applicationId } = req.params;
-      const { description, documents } = req.body;
+      const { description, document } = req.body;
       const userId = req.user._id;
 
       const application = await OrganisationApplication.findOne({
@@ -195,21 +183,8 @@ class OrganizationController {
         application.description = description;
       }
 
-      if (documents && documents.length > 0) {
-        // Validate documents
-        for (const doc of documents) {
-          if (!doc.name || !doc.fileUrl) {
-            res.status(400).json({
-              error: 'Each document must have a name and fileUrl',
-            });
-            return;
-          }
-        }
-
-        application.documents = documents.map((doc) => ({
-          ...doc,
-          uploadedAt: new Date(),
-        }));
+      if (document) {
+        application.document = document;
       }
 
       await application.save();
@@ -219,7 +194,7 @@ class OrganizationController {
         application: {
           id: application._id.toString(),
           description: application.description,
-          documents: application.documents,
+          document: application.document,
           status: application.status,
           createdAt: application.createdAt,
           updatedAt: application.updatedAt,
@@ -319,7 +294,7 @@ class OrganizationController {
               userType: user.userType,
             },
             description: app.description,
-            documents: app.documents,
+            document: app.document,
             status: app.status,
             rejectionReason: app.rejectionReason,
             createdAt: app.createdAt,
@@ -413,7 +388,7 @@ class OrganizationController {
             walletAddress: (application.user as any).walletAddress,
           },
           description: application.description,
-          documents: application.documents,
+          document: application.document,
           status: application.status,
           rejectionReason: application.rejectionReason,
           createdAt: application.createdAt,

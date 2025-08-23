@@ -2,12 +2,9 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IOrganisationApplication extends Document {
   user: mongoose.Types.ObjectId;
+  type: 'institution' | 'company';
   description: string;
-  documents: {
-    name: string;
-    fileUrl: string;
-    uploadedAt: Date;
-  }[];
+  document: string;
   status: 'pending' | 'approved' | 'rejected';
   rejectionReason?: string;
   createdAt: Date;
@@ -21,26 +18,16 @@ const OrganisationApplicationSchema: Schema = new Schema(
       ref: 'User',
       required: true,
     },
+    type: {
+      type: String,
+      enum: ['institution', 'company'],
+      required: true,
+    },
     description: {
       type: String,
       required: true,
     },
-    documents: [
-      {
-        name: {
-          type: String,
-          required: true,
-        },
-        fileUrl: {
-          type: String,
-          required: true,
-        },
-        uploadedAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
+    document: { type: String, required: true },
     status: {
       type: String,
       enum: ['pending', 'approved', 'rejected'],

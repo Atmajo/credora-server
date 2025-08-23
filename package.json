@@ -10,7 +10,21 @@
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "format": "npx prettier --write .",
-    "format:check": "npx prettier --check ."
+    "format:check": "npx prettier --check .",
+    "test": "jest",
+    "test:contracts": "hardhat test",
+    "compile": "hardhat compile",
+    "deploy": "hardhat run scripts/deploy.js",
+    "deploy:localhost": "hardhat run scripts/deploy.js --network localhost",
+    "deploy:goerli": "hardhat run scripts/deploy.js --network goerli",
+    "deploy:mainnet": "hardhat run scripts/deploy.js --network mainnet",
+    "verify": "hardhat run scripts/verify.js --network localhost",
+    "node": "hardhat node",
+    "console": "hardhat console",
+    "flatten": "hardhat flatten",
+    "size": "hardhat size-contracts",
+    "coverage": "hardhat coverage",
+    "gas-report": "REPORT_GAS=true hardhat test"
   },
   "keywords": [
     "blockchain",

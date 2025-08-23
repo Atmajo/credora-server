@@ -171,6 +171,8 @@ class App {
     // Global error handler
     this.app.use(
       (error: Error, req: Request, res: Response, next: NextFunction) => {
+        console.error(error);
+        
         console.error('Global error:', {
           message: error.message,
           stack:
