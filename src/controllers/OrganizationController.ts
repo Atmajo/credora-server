@@ -140,6 +140,7 @@ class OrganizationController {
         success: true,
         application: {
           id: application._id.toString(),
+          type: application.type,
           description: application.description,
           document: application.document,
           status: application.status,
@@ -193,6 +194,7 @@ class OrganizationController {
         success: true,
         application: {
           id: application._id.toString(),
+          type: application.type,
           description: application.description,
           document: application.document,
           status: application.status,
@@ -293,6 +295,7 @@ class OrganizationController {
               walletAddress: user.walletAddress,
               userType: user.userType,
             },
+            type: app.type,
             description: app.description,
             document: app.document,
             status: app.status,
@@ -387,6 +390,7 @@ class OrganizationController {
             email: (application.user as any).email,
             walletAddress: (application.user as any).walletAddress,
           },
+          type: application.type,
           description: application.description,
           document: application.document,
           status: application.status,
