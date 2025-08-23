@@ -36,6 +36,9 @@ class BlockchainConfig implements IBlockchainConfig {
       this.wallet
     );
 
+    // Debug the registry contract methods
+    this.debugContractMethods(this.registryContract, 'CredentialRegistry');
+
     this.verificationContract = this.initializeContract(
       process.env.VERIFICATION_CONTRACT_ADDRESS!,
       require('../abis/VerificationContract.json'),
@@ -51,7 +54,19 @@ class BlockchainConfig implements IBlockchainConfig {
     if (!address) {
       throw new Error(`Contract address is not defined`);
     }
-    return new ethers.Contract(address, abi, signerOrProvider);
+    
+    if (!abi || abi.length === 0) {
+      throw new Error(`Contract ABI is not defined or empty`);
+    }
+
+    try {
+      const contract = new ethers.Contract(address, abi, signerOrProvider);
+      console.log(`Contract initialized successfully at address: ${address}`);
+      return contract;
+    } catch (error) {
+      console.error(`Failed to initialize contract at ${address}:`, error);
+      throw error;
+    }
   }
 
   /**
@@ -67,6 +82,23 @@ class BlockchainConfig implements IBlockchainConfig {
   }
 
   /**
+   * Debug contract methods - list all available methods
+   */
+  public debugContractMethods(contract: ethers.Contract, contractName: string): void {
+    console.log(`\n=== ${contractName} Contract Methods ===`);
+    const contractInterface = contract.interface;
+    const methods = contractInterface.fragments.filter(fragment => fragment.type === 'function');
+    
+    methods.forEach(method => {
+      if (method.type === 'function') {
+        const funcFragment = method as ethers.FunctionFragment;
+        console.log(`- ${funcFragment.name}(${funcFragment.inputs.map(input => `${input.type} ${input.name}`).join(', ')})`);
+      }
+    });
+    console.log(`Total methods: ${methods.length}\n`);
+  }
+
+  /**
    * Estimate gas for transactions
    */
   public async estimateGas(
@@ -75,6 +107,18 @@ class BlockchainConfig implements IBlockchainConfig {
     params: any[]
   ): Promise<bigint> {
     try {
+      // Check if the method exists on the contract
+      if (!contract[method]) {
+        console.error(`Method ${method} does not exist on contract`);
+        return BigInt(500000); // Default gas limit
+      }
+
+      // Check if estimateGas exists for this method
+      if (!contract[method].estimateGas) {
+        console.error(`EstimateGas not available for method ${method}`);
+        return BigInt(500000); // Default gas limit
+      }
+
       const gasEstimate = await contract[method].estimateGas(...params);
       return gasEstimate;
     } catch (error) {

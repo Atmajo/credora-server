@@ -63,12 +63,13 @@ class BlockchainController {
       const orgName = user.name;
       const orgDescription = organizationDetails?.description || '';
       const orgWebsite = organizationDetails?.website || '';
+      const documentHash = ''; // Empty for now, can be updated later via updateInstitutionDocuments
 
       // Estimate gas for the registration
       const gasEstimate = await blockchain.getGasEstimate(
         blockchain.registryContract,
         'registerInstitution',
-        [user.walletAddress, orgName, user.email, orgWebsite]
+        [user.walletAddress, orgName, orgWebsite, user.email, documentHash]
       );
 
       // Execute registration transaction
@@ -77,6 +78,7 @@ class BlockchainController {
         orgName,
         orgWebsite,
         user.email,
+        documentHash,
         {
           gasLimit: gasEstimate.gasLimit,
           gasPrice: gasEstimate.gasPrice,
@@ -113,6 +115,18 @@ class BlockchainController {
 
     } catch (error) {
       console.error('Blockchain registration error:', error);
+      
+      // Enhanced error logging for debugging
+      if (error instanceof Error) {
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
+      }
+      
+      // Log contract state for debugging
+      console.log('Registry contract address:', process.env.CREDENTIAL_REGISTRY_ADDRESS);
+      console.log('User wallet address:', req.user?.walletAddress);
+      console.log('Organization name:', req.user?.name);
+      
       res.status(500).json({ 
         error: 'Failed to register on blockchain',
         details: (error as Error).message 
