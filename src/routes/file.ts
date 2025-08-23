@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { auth } from '../middleware/auth';
-import { fileDownload } from '@/controllers/files/fileDownload';
-import { fileUpload } from '@/controllers/files/fileUpload';
+import { fileDownload } from '../controllers/files/fileDownload';
+import { fileUpload } from '../controllers/files/fileUpload';
 import multer from 'multer';
 
 const router = Router();

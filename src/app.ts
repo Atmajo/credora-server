@@ -10,6 +10,7 @@ import connectDB from './config/database';
 import authRoutes from './routes/auth';
 import organizationRoutes from './routes/organization';
 import credentialRoutes from './routes/credentials';
+import fileRoutes from './routes/file';
 
 class App {
   public app: express.Application;
@@ -124,6 +125,7 @@ class App {
     this.app.use('/api/auth', authRoutes);
     this.app.use('/api/organization', organizationRoutes);
     this.app.use("/api/credentials", credentialRoutes);
+    this.app.use("/api/file", fileRoutes);
     // this.app.use('/api/institutions', institutionRoutes);
     // this.app.use('/api/users', userRoutes);
 
