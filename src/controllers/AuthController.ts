@@ -78,7 +78,7 @@ class AuthController {
 
       const nonce = Math.floor(Math.random() * 1000000);
       const message = AuthController.generateLoginMessage(walletAddress, nonce);
-      
+
       const challenge: ILoginChallenge = {
         message,
         nonce,
@@ -174,6 +174,7 @@ class AuthController {
 
       const response: IAuthResponse = {
         success: true,
+        token: token,
         user: {
           id: user._id!.toString(),
           walletAddress: user.walletAddress,
@@ -231,11 +232,21 @@ class AuthController {
         return;
       }
 
+      const tokenPayload = {
+        id: user._id,
+        walletAddress: user.walletAddress,
+      };
+
+      const tokenData = jwt.sign(tokenPayload, jwtSecret, {
+        expiresIn: process.env.JWT_EXPIRES_IN || '30D',
+      });
+
       user.isVerified = true;
       await user.save();
 
       const response: IAuthResponse = {
         success: true,
+        token: tokenData,
         user: {
           id: user._id!.toString(),
           walletAddress: user.walletAddress,

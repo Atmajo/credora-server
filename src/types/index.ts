@@ -158,6 +158,7 @@ export interface IAuthRequest {
 
 export interface IAuthResponse {
   success: boolean;
+  token: string;
   user: {
     id: string;
     walletAddress: string;
