@@ -4,12 +4,12 @@ dotenv.config();
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
 import connectDB from './config/database';
 
 // Import routes
 import authRoutes from './routes/auth';
 import organizationRoutes from './routes/organization';
+import credentialRoutes from './routes/credentials';
 
 class App {
   public app: express.Application;
@@ -76,28 +76,6 @@ class App {
       })
     );
 
-    // Rate limiting
-    const limiter = rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 100, // limit each IP to 100 requests per windowMs
-      message: {
-        error: 'Too many requests from this IP, please try again later.',
-      },
-      standardHeaders: true,
-      legacyHeaders: false,
-    });
-    this.app.use(limiter);
-
-    // Stricter rate limiting for authentication endpoints
-    const authLimiter = rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 20, // limit each IP to 20 auth requests per windowMs
-      message: {
-        error: 'Too many authentication attempts, please try again later.',
-      },
-    });
-    this.app.use('/api/auth', authLimiter);
-
     // Body parsing middleware
     this.app.use(
       express.json({
@@ -145,7 +123,7 @@ class App {
     // API routes
     this.app.use('/api/auth', authRoutes);
     this.app.use('/api/organization', organizationRoutes);
-    // this.app.use("/api/credentials", credentialRoutes);
+    this.app.use("/api/credentials", credentialRoutes);
     // this.app.use('/api/institutions', institutionRoutes);
     // this.app.use('/api/users', userRoutes);
 
