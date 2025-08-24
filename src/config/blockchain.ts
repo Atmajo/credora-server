@@ -1,5 +1,8 @@
+import { configDotenv } from 'dotenv';
 import { ethers } from 'ethers';
 import { IBlockchainConfig, IGasEstimate } from '../types';
+
+configDotenv();
 
 class BlockchainConfig implements IBlockchainConfig {
   public provider: ethers.JsonRpcProvider;
@@ -54,7 +57,7 @@ class BlockchainConfig implements IBlockchainConfig {
     if (!address) {
       throw new Error(`Contract address is not defined`);
     }
-    
+
     if (!abi || abi.length === 0) {
       throw new Error(`Contract ABI is not defined or empty`);
     }
@@ -84,15 +87,22 @@ class BlockchainConfig implements IBlockchainConfig {
   /**
    * Debug contract methods - list all available methods
    */
-  public debugContractMethods(contract: ethers.Contract, contractName: string): void {
+  public debugContractMethods(
+    contract: ethers.Contract,
+    contractName: string
+  ): void {
     console.log(`\n=== ${contractName} Contract Methods ===`);
     const contractInterface = contract.interface;
-    const methods = contractInterface.fragments.filter(fragment => fragment.type === 'function');
-    
-    methods.forEach(method => {
+    const methods = contractInterface.fragments.filter(
+      (fragment) => fragment.type === 'function'
+    );
+
+    methods.forEach((method) => {
       if (method.type === 'function') {
         const funcFragment = method as ethers.FunctionFragment;
-        console.log(`- ${funcFragment.name}(${funcFragment.inputs.map(input => `${input.type} ${input.name}`).join(', ')})`);
+        console.log(
+          `- ${funcFragment.name}(${funcFragment.inputs.map((input) => `${input.type} ${input.name}`).join(', ')})`
+        );
       }
     });
     console.log(`Total methods: ${methods.length}\n`);
@@ -201,7 +211,11 @@ class BlockchainConfig implements IBlockchainConfig {
         setTimeout(() => resolve(null), timeoutMs);
       });
 
-      const txPromise = this.provider.waitForTransaction(txHash, confirmations, timeoutMs);
+      const txPromise = this.provider.waitForTransaction(
+        txHash,
+        confirmations,
+        timeoutMs
+      );
 
       const result = await Promise.race([txPromise, timeoutPromise]);
       return result;
