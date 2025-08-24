@@ -13,7 +13,7 @@ class BlockchainConfig implements IBlockchainConfig {
 
   constructor() {
     // Initialize provider
-    const rpcUrl = process.env.RPC_URL;
+    const rpcUrl = process.env.RPC_URL || "https://sepolia.infura.io/v3/abad48f00c9f4cf5850102f36fd8ee19";
     if (!rpcUrl) {
       throw new Error('RPC_URL is not defined in environment variables');
     }
