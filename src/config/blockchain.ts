@@ -188,13 +188,27 @@ class BlockchainConfig implements IBlockchainConfig {
   }
 
   /**
-   * Wait for transaction confirmation
+   * Wait for transaction confirmation with configurable timeout
    */
   public async waitForTransaction(
     txHash: string,
-    confirmations: number = 1
+    confirmations: number = 1,
+    timeoutMs: number = 300000 // 5 minutes default
   ): Promise<ethers.TransactionReceipt | null> {
-    return await this.provider.waitForTransaction(txHash, confirmations);
+    try {
+      // Use a timeout promise to prevent indefinite waiting
+      const timeoutPromise = new Promise<null>((resolve) => {
+        setTimeout(() => resolve(null), timeoutMs);
+      });
+
+      const txPromise = this.provider.waitForTransaction(txHash, confirmations, timeoutMs);
+
+      const result = await Promise.race([txPromise, timeoutPromise]);
+      return result;
+    } catch (error) {
+      console.error('Transaction wait error:', error);
+      return null;
+    }
   }
 }
 

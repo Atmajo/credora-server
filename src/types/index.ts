@@ -21,7 +21,10 @@ export interface IUser {
   blockchain?: {
     isRegistered: boolean;
     registrationTxHash?: string;
+    verificationTxHash?: string;
     registrationBlockNumber?: number;
+    verificationBlockNumber?: number;
+    verificationStatus?: 'pending' | 'confirmed' | 'failed';
     registeredAt?: Date;
   };
   otp?: string;

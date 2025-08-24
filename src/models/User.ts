@@ -127,8 +127,18 @@ const UserSchema = new Schema<IUserDocument>(
       registrationTxHash: {
         type: String,
       },
+      verificationTxHash: {
+        type: String,
+      },
       registrationBlockNumber: {
         type: Number,
+      },
+      verificationBlockNumber: {
+        type: Number,
+      },
+      verificationStatus: {
+        type: String,
+        enum: ['pending', 'confirmed', 'failed'],
       },
       registeredAt: {
         type: Date,

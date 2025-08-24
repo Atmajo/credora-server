@@ -112,10 +112,13 @@ class CredentialController {
       }
 
       // Store metadata on IPFS
+      console.log('📤 Storing credential metadata on IPFS...');
       const ipfsHash = await ipfsService.uploadMetadata(metadata);
       const tokenURI = ipfsService.getPublicUrl(ipfsHash);
+      console.log('✅ Metadata stored on IPFS with hash:', ipfsHash);
 
       // Issue credential on blockchain
+      console.log('⛓️ Issuing credential on blockchain...');
       const tx = await blockchain.credentialContract.issueCredential(
         recipientAddress,
         credentialData.credentialType,
@@ -125,15 +128,38 @@ class CredentialController {
         tokenURI
       );
 
+      console.log('⏳ Waiting for transaction confirmation...');
       const receipt = await tx.wait();
-      const tokenId = receipt.logs
-        .find((log: any) => log.eventName === 'CredentialIssued')
-        ?.args?.tokenId?.toString();
-
+      console.log('✅ Blockchain transaction confirmed:', tx.hash);
+      
+      // Parse the transaction logs to get the token ID
+      let tokenId: string | null = null;
+      
+      for (const log of receipt.logs) {
+        try {
+          // Parse the log using the contract interface
+          const parsedLog = blockchain.credentialContract.interface.parseLog({
+            topics: [...log.topics],
+            data: log.data
+          });
+          
+          if (parsedLog && parsedLog.name === 'CredentialIssued') {
+            tokenId = parsedLog.args.tokenId.toString();
+            console.log('🎯 Token ID extracted from event:', tokenId);
+            break;
+          }
+        } catch (parseError) {
+          // Skip logs that don't match our contract interface
+          continue;
+        }
+      }
+      
       if (!tokenId) {
+        console.error('❌ Failed to parse CredentialIssued event from logs');
+        console.log('📋 Receipt logs:', receipt.logs);
         throw new Error('Failed to get token ID from transaction receipt');
       }
-
+      
       // Save to database
       const credential = new Credential({
         tokenId,
@@ -162,7 +188,7 @@ class CredentialController {
       });
 
       await credential.save();
-
+      
       // Update user's credential list
       await User.findOneAndUpdate(
         { walletAddress: recipientAddress.toLowerCase() },

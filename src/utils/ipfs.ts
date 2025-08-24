@@ -1,6 +1,5 @@
-import { create } from 'ipfs-http-client';
+import { create, IPFSHTTPClient } from 'ipfs-http-client';
 import { ICredentialMetadata } from '../types';
-import { IPFSHTTPClient } from 'ipfs-http-client/types/src/types';
 
 class IPFSService {
   private client: IPFSHTTPClient | null = null;
@@ -13,21 +12,29 @@ class IPFSService {
     try {
       const host = process.env.IPFS_HOST || 'ipfs.infura.io';
       const port = parseInt(process.env.IPFS_PORT || '5001');
-      const protocol = 'https';
-
+      
       const projectId = process.env.IPFS_PROJECT_ID;
       const projectSecret = process.env.IPFS_PROJECT_SECRET;
 
-      if (!projectId || !projectSecret) {
+      // Check if using placeholder/invalid credentials or localhost
+      const isLocalhost = host === 'localhost' || host === '127.0.0.1';
+      const hasValidCredentials = projectId && projectSecret && 
+        projectId !== 'your_ipfs_project_id_here' && 
+        projectSecret !== 'your_ipfs_project_secret_here';
+
+      if (isLocalhost || !hasValidCredentials) {
         console.warn(
-          'IPFS project credentials not found. Using local IPFS node if available.'
+          'IPFS project credentials not found or using localhost. Using local IPFS node if available.'
         );
         this.client = create({
           host: 'localhost',
           port: 5001,
           protocol: 'http',
         });
+        console.log('🚀 IPFS Service initialized with local node');
       } else {
+        // Use HTTPS for remote services like Infura
+        const protocol = isLocalhost ? 'http' : 'https';
         this.client = create({
           host,
           port,
@@ -38,8 +45,8 @@ class IPFSService {
             ).toString('base64')}`,
           },
         });
+        console.log('🚀 IPFS Service initialized with remote service');
       }
-      console.log('🚀 IPFS Service initialized');
     } catch (error) {
       console.error('❌ Failed to initialize IPFS client:', error);
       // Fallback to mock mode
@@ -51,20 +58,38 @@ class IPFSService {
    * Upload metadata to IPFS
    */
   public async uploadMetadata(metadata: ICredentialMetadata): Promise<string> {
-    try {
-      if (!this.client) {
-        await this.initializeClient();
-      }
-      if (!this.client) {
-        throw new Error('IPFS client not available');
-      }
+    let attempt = 0;
+    const maxAttempts = 2;
+    
+    while (attempt < maxAttempts) {
+      try {
+        if (!this.client) {
+          await this.initializeClient();
+        }
+        if (!this.client) {
+          throw new Error('IPFS client not available');
+        }
 
-      const { cid } = await this.client.add(JSON.stringify(metadata, null, 2));
-      return cid.toString();
-    } catch (error) {
-      console.error('IPFS metadata upload error:', error);
-      throw new Error('Failed to upload metadata to IPFS');
+        console.log(`📤 Uploading metadata to IPFS (attempt ${attempt + 1})...`);
+        const { cid } = await this.client.add(JSON.stringify(metadata, null, 2));
+        const cidString = cid.toString();
+        console.log('✅ Metadata uploaded to IPFS with CID:', cidString);
+        return cidString;
+      } catch (error) {
+        console.error(`IPFS metadata upload error (attempt ${attempt + 1}):`, error);
+        
+        if (attempt === maxAttempts - 1) {
+          throw new Error('Failed to upload metadata to IPFS after multiple attempts');
+        }
+        
+        // Reset client for retry
+        this.client = null;
+        attempt++;
+        console.log('🔄 Retrying IPFS upload...');
+      }
     }
+    
+    throw new Error('Failed to upload metadata to IPFS');
   }
 
   /**

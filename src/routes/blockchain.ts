@@ -8,6 +8,9 @@ const router = Router();
 router.post('/register', auth, BlockchainController.registerUserOnBlockchain as any);
 router.get('/registration-status', auth, BlockchainController.checkBlockchainRegistration as any);
 
+// Verification status checking
+router.get('/verification-status/:txHash', auth, BlockchainController.checkVerificationStatus as any);
+
 // Network information
 router.get('/network', BlockchainController.getNetworkInfo);
 
