@@ -91,7 +91,7 @@ class BlockchainController {
       const user = req.user;
 
       // Validate user type
-      if (!['institution', 'employer', 'verifier'].includes(user.userType)) {
+      if (!['institution', 'company', 'verifier'].includes(user.userType)) {
         res.status(400).json({
           error:
             'Only institutions, employers, and verifiers can register on blockchain',
