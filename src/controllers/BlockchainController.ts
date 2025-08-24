@@ -469,10 +469,10 @@ class BlockchainController {
               }
             : null,
         status: isAuthorized
-          ? 'Fully registered and verified'
+          ? 'registered'
           : isRegistered
-            ? 'Registered but not verified'
-            : 'Not registered',
+            ? 'confirmed'
+            : 'unverified',
       });
     } catch (error) {
       console.error('Check blockchain registration error:', error);
