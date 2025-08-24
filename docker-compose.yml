@@ -7,8 +7,6 @@ services:
       - '5000:5000'
     env_file:
       - .env
-    depends_on:
-      - mongodb
     networks:
       - credora-network
     volumes:
